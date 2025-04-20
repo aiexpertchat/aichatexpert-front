@@ -1,0 +1,46 @@
+Backend
+mongodb+srv://expertaichat:expertaichat@cluster0.c4kz3zx.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+
+
+#1 - setup project
+
+#2 - connect db
+
+#3 - setup endpoints (auth - stripe - rate limit)
+
+#4- add front pages
+
+
+stripe endpoints
+login pages
+pricing page
+streaming issue
+Start only one new conversation, do not spam creation
+
+
+Cancel subs
+Check your credits + usage limit + credits usage
+User profile page
+
+- **Free Plan**  
+  - **5 free chat interactions**  
+  - On the **6th interaction**, users must enter their **name and email** to continue.  
+  - No memory (AI resets after each session)
+  - **5 additional free chat interactions** (No memory)
+
+- **Pro Plan – $9.99/month**  
+  - **300 chat interactions per month** (~10 per day).  
+  - Session-based memory (remembers during the same chat session but resets on refresh).  
+
+- **Pro+ Plan – $14.99/month**  
+  - **500 chat interactions per month** (~16 per day).  
+  - Session-based memory.  
+
+- **Premium Plan – $34.99/month**  
+  - **Unlimited chat interactions**  
+  - **Extended memory** (AI retains more conversation history).  
+
+
+- **Chat Boost – $3.99 for 100 extra chat interactions**  
+  - Only offered when a user reaches **25 chat interactions left** in their plan.  
+  - A notification will appear in the chat prompting them to purchase. 
