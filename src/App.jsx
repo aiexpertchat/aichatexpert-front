@@ -2,6 +2,8 @@ import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LandingPage from "./LandingPage";
 import AuthContainer from "./Components/AuthContainer";
+import ForgotPassword from "./Components/ForgotPassword";
+import ResetPassword from "./Components/ResetPassword";
 
 function App() {
   // You can add authentication check logic here
@@ -13,6 +15,9 @@ function App() {
         <Routes>
           {/* Public routes */}
           <Route path="/auth" element={<AuthContainer />} />
+
+          <Route path="/forget-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
 
           {/* Protected routes */}
           <Route

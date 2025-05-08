@@ -26,19 +26,16 @@ const LoginPage = ({ onToggleView }) => {
 
     try {
       // API call using fetch
-      const response = await fetch(
-        "https://ai-expert-chat-9tckp.ondigitalocean.app/api/v1/auth/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: formData.email,
-            password: formData.password,
-          }),
-        }
-      );
+      const response = await fetch("http://localhost:5000/api/v1/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
 
       const data = await response.json();
 
@@ -201,6 +198,15 @@ const LoginPage = ({ onToggleView }) => {
               >
                 Remember me
               </label>
+            </div>
+            <div className="flex items-center">
+              <a
+                href="/forget-password"
+                htmlFor="forget-password"
+                className="ml-2 block text-sm text-gray-900"
+              >
+                Forget password?
+              </a>
             </div>
           </div>
 

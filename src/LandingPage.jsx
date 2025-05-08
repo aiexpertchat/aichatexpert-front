@@ -25,7 +25,7 @@ const getAuthHeaders = () => {
 
 // Set base URL for API requests
 const api = axios.create({
-  baseURL: "https://ai-expert-chat-9tckp.ondigitalocean.app/api",
+  baseURL: "http://localhost:5000/api",
   headers: {
     "Content-Type": "application/json",
   },
@@ -35,8 +35,6 @@ function LandingPage() {
   const [messages, setMessages] = useState([]);
   const [userInput, setUserInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [streamingText, setStreamingText] = useState("");
-  const [isStreaming, setIsStreaming] = useState(false);
   const [conversations, setConversations] = useState([]);
   const [currentConversationId, setCurrentConversationId] = useState(null);
   const [showSidebar, setShowSidebar] = useState(true);
@@ -66,7 +64,6 @@ function LandingPage() {
 
   const chatEndRef = useRef(null);
   const textareaRef = useRef(null);
-  const eventSourceRef = useRef(null);
 
   // Fetch conversations from API on initial render
   useEffect(() => {
@@ -85,7 +82,7 @@ function LandingPage() {
     try {
       setFetchingConversations(true);
       const response = await axios.get(
-        "https://ai-expert-chat-9tckp.ondigitalocean.app/api/chat/recent",
+        "http://localhost:5000/api/chat/recent",
         getAuthHeaders()
       );
       if (response.data.chats) {
@@ -156,7 +153,7 @@ function LandingPage() {
 
       // Submit email to API
       await axios.post(
-        "https://ai-expert-chat-9tckp.ondigitalocean.app/api/auth/capture-email",
+        "http://localhost:5000/api/auth/capture-email",
         emailData,
         {
           headers: {
@@ -244,7 +241,7 @@ function LandingPage() {
     try {
       setIsLoading(true);
       const response = await axios.get(
-        `https://ai-expert-chat-9tckp.ondigitalocean.app/api/chat/${conversationId}`,
+        `http://localhost:5000/api/chat/${conversationId}`,
         getAuthHeaders()
       );
 
@@ -317,144 +314,8 @@ function LandingPage() {
     }
   }, [userInput, currentConversationId]);
 
-  const tokeni = localStorage.getItem("token");
-  // Function to handle real streaming from API
-  const handleStreamingResponse = (chatId, userMsg) => {
-    // Create full URL for event source
-    const fullUrl = `https://ai-expert-chat-9tckp.ondigitalocean.app/api/chat/${chatId}/messages?message=${encodeURIComponent(
-      userMsg
-    )}`;
-
-    // Close any existing event source
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close();
-    }
-
-    // Get token for authorization
-    const token = localStorage.getItem("token");
-
-    // Create new event source with authorization header
-    const eventSource = new EventSource(fullUrl, {
-      headers: {
-        Authorization: `${token}`,
-      },
-    });
-
-    // First try to send a non-streaming request if EventSource fails
-    const fallbackToNonStreaming = async () => {
-      try {
-        const response = await axios.post(
-          `https://ai-expert-chat-9tckp.ondigitalocean.app/api/chat/${chatId}/message`,
-          { message: userMsg },
-          getAuthHeaders()
-        );
-
-        if (response.data.response) {
-          simulateStreamingEffect(response.data.response);
-        }
-
-        // Update interactions count if provided in response
-        if (response.data.interactionsLeft !== undefined) {
-          setInteractionsLeft(response.data.interactionsLeft);
-        }
-      } catch (err) {
-        console.error("Fallback request failed:", err);
-
-        // Handle specific error responses
-        if (err.response) {
-          const { status, data } = err.response;
-
-          if (status === 401) {
-            showErrorModal(
-              "Authentication Required",
-              "You need to log in to continue."
-            );
-          } else if (status === 402 && data.requiresAuth) {
-            setShowEmailModal(true);
-          } else if (status === 429) {
-            handleRateLimitExceeded(data);
-          }
-        }
-
-        setMessages((prevMessages) => {
-          const newMessages = [...prevMessages];
-          // Replace the typing indicator with an error message
-          newMessages[newMessages.length - 1] = {
-            role: "ai",
-            content:
-              "Error: Unable to connect to the assistant. Please try again.",
-          };
-          return newMessages;
-        });
-        setIsStreaming(false);
-      }
-    };
-
-    // Store reference for cleanup
-    eventSourceRef.current = eventSource;
-
-    // Set up state for streaming
-    setIsStreaming(true);
-    setStreamingText("");
-
-    // Full response that will be added to messages
-    let fullResponse = "";
-
-    // Handle incoming message chunks
-    eventSource.onmessage = (event) => {
-      console.log("Raw SSE:", event.data); // Check exactly what arrives
-      if (event.data === "[DONE]") {
-        // Streaming complete
-        eventSource.close();
-        eventSourceRef.current = null;
-        setIsStreaming(false);
-
-        // Update the actual messages array once streaming is complete
-        setMessages((prevMessages) => {
-          const newMessages = [...prevMessages];
-          // Replace the last message (which had isTyping: true) with the complete response
-          newMessages[newMessages.length - 1] = {
-            role: "assistant",
-            content: fullResponse,
-          };
-
-          // Update conversation in state
-          updateConversationTitle(newMessages);
-
-          return newMessages;
-        });
-      } else {
-        try {
-          const chunk = JSON.parse(event.data);
-          const delta = chunk?.choices?.[0]?.delta;
-          // Even if delta.content is just "\n" or "H", append it
-          if (typeof delta?.content !== "undefined") {
-            fullResponse += delta.content;
-            setStreamingText(fullResponse);
-          }
-
-          // If the chunk contains usage information, update state
-          if (chunk.usage && chunk.usage.interactionsLeft !== undefined) {
-            setInteractionsLeft(chunk.usage.interactionsLeft);
-          }
-        } catch (err) {
-          console.error("Error parsing SSE chunk:", err);
-        }
-      }
-    };
-
-    // Handle errors
-    eventSource.onerror = (error) => {
-      console.error("Streaming error:", error);
-      eventSource.close();
-      eventSourceRef.current = null;
-
-      // Try fallback if streaming fails
-      fallbackToNonStreaming();
-    };
-  };
-
   // Function to send messages
+
   const sendMessage = async () => {
     if (!userInput.trim() || isLoading) return;
 
@@ -481,14 +342,14 @@ function LandingPage() {
     setIsLoading(true);
 
     try {
-      // Add typing indicator while waiting for response
+      // Add loading indicator while waiting for response
       setMessages([...newMessages, { role: "ai", isTyping: true }]);
 
       // Determine if we're creating a new chat or adding to existing one
       if (currentConversationId && currentConversationId.startsWith("temp-")) {
         // New conversation - call create endpoint
         const response = await axios.post(
-          "https://ai-expert-chat-9tckp.ondigitalocean.app/api/chat",
+          "http://localhost:5000/api/chat",
           { message: userMsg },
           getAuthHeaders()
         );
@@ -506,15 +367,48 @@ function LandingPage() {
             )
           );
 
-          // For real API streaming, use the handleStreamingResponse function
           if (response.data.chat.messages[1]?.role === "assistant") {
-            // If API immediately returns response, simulate streaming
-            simulateStreamingEffect(response.data.chat.messages[1].content);
+            // Add the AI response directly
+            setMessages((prevMessages) => {
+              const newMessages = [...prevMessages];
+              // Replace the typing indicator with the complete response
+              newMessages[newMessages.length - 1] = {
+                role: "ai",
+                content: response.data.chat.messages[1].content,
+              };
+              return newMessages;
+            });
           }
         }
       } else {
-        // Existing conversation - handle with streaming
-        handleStreamingResponse(currentConversationId, userMsg);
+        // Existing conversation - send message to API
+        const response = await axios.post(
+          `http://localhost:5000/api/chat/${currentConversationId}/message`,
+          { message: userMsg },
+          getAuthHeaders()
+        );
+
+        if (response.data.response) {
+          // Add the AI response directly
+          setMessages((prevMessages) => {
+            const newMessages = [...prevMessages];
+            // Replace the typing indicator with the complete response
+            newMessages[newMessages.length - 1] = {
+              role: "ai",
+              content: response.data.response,
+            };
+
+            // Update conversation in state
+            updateConversationTitle(newMessages);
+
+            return newMessages;
+          });
+        }
+
+        // Update interactions count if provided in response
+        if (response.data.interactionsLeft !== undefined) {
+          setInteractionsLeft(response.data.interactionsLeft);
+        }
       }
     } catch (error) {
       console.error("Error sending message:", error);
@@ -561,47 +455,12 @@ function LandingPage() {
       ];
       setMessages(errorMessages);
       updateConversationTitle(errorMessages);
-      setIsStreaming(false);
     } finally {
       setIsLoading(false);
       if (textareaRef.current) {
         textareaRef.current.focus();
       }
     }
-  };
-
-  // Function to simulate streaming text effect (as fallback)
-  const simulateStreamingEffect = (text, speed = 15) => {
-    setIsStreaming(true);
-    setStreamingText("");
-    let currentIndex = 0;
-
-    const streamText = () => {
-      if (currentIndex < text.length) {
-        setStreamingText((prev) => prev + text[currentIndex]);
-        currentIndex++;
-        setTimeout(streamText, speed);
-      } else {
-        setIsStreaming(false);
-
-        // Update the actual messages array once streaming is complete
-        setMessages((prevMessages) => {
-          const newMessages = [...prevMessages];
-          // Replace the last message (which had isTyping: true) with the complete response
-          newMessages[newMessages.length - 1] = {
-            role: "ai",
-            content: text,
-          };
-
-          // Update conversation in localStorage
-          updateConversationTitle(newMessages);
-
-          return newMessages;
-        });
-      }
-    };
-
-    streamText();
   };
 
   // Auto-adjust textarea height
@@ -612,11 +471,6 @@ function LandingPage() {
       textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
     }
   };
-
-  // Auto-scroll to the latest message
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, streamingText]);
 
   // Handle mobile sidebar visibility
   useEffect(() => {
@@ -636,15 +490,6 @@ function LandingPage() {
     }
   }, [userInput]);
 
-  // Clean up event source on unmount
-  useEffect(() => {
-    return () => {
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
-      }
-    };
-  }, []);
-
   // Function to delete a conversation
   const deleteConversation = async (id, e) => {
     e.stopPropagation();
@@ -662,7 +507,7 @@ function LandingPage() {
 
     try {
       await axios.delete(
-        `https://ai-expert-chat-9tckp.ondigitalocean.app/api/chat/${id}`,
+        `http://localhost:5000/api/chat/${id}`,
         getAuthHeaders()
       );
 
@@ -711,7 +556,7 @@ function LandingPage() {
 
       // Use the new endpoint we created to fetch rate limit info
       const response = await axios.get(
-        "https://ai-expert-chat-9tckp.ondigitalocean.app/api/v1/auth/rate-limit-info",
+        "http://localhost:5000/api/v1/auth/rate-limit-info",
         getAuthHeaders()
       );
 
@@ -731,9 +576,6 @@ function LandingPage() {
         });
 
         // If fetchInteractionsLeft callback is provided, update parent component
-        if (fetchInteractionsLeft) {
-          fetchInteractionsLeft(data.remaining);
-        }
       }
     } catch (error) {
       console.error("Failed to fetch usage data:", error);
@@ -993,8 +835,8 @@ function LandingPage() {
                       {/* For regular messages */}
                       {!msg.isTyping && msg.content}
 
-                      {/* For typing indicator */}
-                      {msg.isTyping && !isStreaming && (
+                      {/* For typing indicator - only show when loading */}
+                      {msg.isTyping && (
                         <div className="flex items-center space-x-1.5">
                           <div
                             className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
@@ -1008,14 +850,6 @@ function LandingPage() {
                             className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
                             style={{ animationDelay: "300ms" }}
                           ></div>
-                        </div>
-                      )}
-
-                      {/* For streaming text */}
-                      {msg.isTyping && isStreaming && (
-                        <div>
-                          {streamingText}
-                          <span className="inline-block w-1 h-4 ml-0.5 bg-gray-400 animate-blink"></span>
                         </div>
                       )}
                     </div>
@@ -1077,14 +911,14 @@ function LandingPage() {
                       sendMessage();
                     }
                   }}
-                  disabled={isLoading || isStreaming}
+                  disabled={isLoading}
                   rows="1"
                 />
                 <button
                   onClick={sendMessage}
-                  disabled={!userInput.trim() || isLoading || isStreaming}
+                  disabled={!userInput.trim() || isLoading}
                   className={`absolute right-3 bottom-3 rounded-full p-2 transition-colors ${
-                    userInput.trim() && !isLoading && !isStreaming
+                    userInput.trim() && !isLoading
                       ? "text-white bg-blue-500 hover:bg-blue-600"
                       : "text-gray-300 bg-gray-100 cursor-not-allowed"
                   }`}

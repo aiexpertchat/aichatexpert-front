@@ -84,7 +84,7 @@ const PricingModal = ({
 
       // Call your checkout API here using axios
       const response = await axios.post(
-        "https://ai-expert-chat-9tckp.ondigitalocean.app/api/checkout",
+        "http://localhost:5000/api/checkout",
         { plan: plan.name },
         {
           headers: {
@@ -114,7 +114,7 @@ const PricingModal = ({
     try {
       // Call your boost purchase API here using axios
       const response = await axios.post(
-        "https://ai-expert-chat-9tckp.ondigitalocean.app/api/checkout",
+        "http://localhost:5000/api/checkout",
         { plan: "Pro" },
         {
           headers: {

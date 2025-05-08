@@ -27,7 +27,7 @@ const SignupPage = ({ onToggleView }) => {
     try {
       // API call using fetch
       const response = await fetch(
-        "https://ai-expert-chat-9tckp.ondigitalocean.app/api/v1/auth/register",
+        "http://localhost:5000/api/v1/auth/register",
         {
           method: "POST",
           headers: {
