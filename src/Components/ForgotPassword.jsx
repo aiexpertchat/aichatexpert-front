@@ -13,7 +13,7 @@ const ForgotPassword = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/v1/auth/forgot-password",
+        "https://ai-expert-chat-9tckp.ondigitalocean.app/api/v1/auth/forgot-password",
         { email }
       );
       setMessage({

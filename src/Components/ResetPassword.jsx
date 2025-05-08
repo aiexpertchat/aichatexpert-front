@@ -63,7 +63,7 @@ const ResetPassword = () => {
 
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/v1/auth/reset-password/${token}`,
+        `https://ai-expert-chat-9tckp.ondigitalocean.app/api/v1/auth/reset-password/${token}`,
         {
           password,
         }

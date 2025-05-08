@@ -25,7 +25,7 @@ const getAuthHeaders = () => {
 
 // Set base URL for API requests
 const api = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: "https://ai-expert-chat-9tckp.ondigitalocean.app/api",
   headers: {
     "Content-Type": "application/json",
   },
@@ -82,7 +82,7 @@ function LandingPage() {
     try {
       setFetchingConversations(true);
       const response = await axios.get(
-        "http://localhost:5000/api/chat/recent",
+        "https://ai-expert-chat-9tckp.ondigitalocean.app/api/chat/recent",
         getAuthHeaders()
       );
       if (response.data.chats) {
@@ -153,7 +153,7 @@ function LandingPage() {
 
       // Submit email to API
       await axios.post(
-        "http://localhost:5000/api/auth/capture-email",
+        "https://ai-expert-chat-9tckp.ondigitalocean.app/api/auth/capture-email",
         emailData,
         {
           headers: {
@@ -241,7 +241,7 @@ function LandingPage() {
     try {
       setIsLoading(true);
       const response = await axios.get(
-        `http://localhost:5000/api/chat/${conversationId}`,
+        `https://ai-expert-chat-9tckp.ondigitalocean.app/api/chat/${conversationId}`,
         getAuthHeaders()
       );
 
@@ -349,7 +349,7 @@ function LandingPage() {
       if (currentConversationId && currentConversationId.startsWith("temp-")) {
         // New conversation - call create endpoint
         const response = await axios.post(
-          "http://localhost:5000/api/chat",
+          "https://ai-expert-chat-9tckp.ondigitalocean.app/api/chat",
           { message: userMsg },
           getAuthHeaders()
         );
@@ -383,7 +383,7 @@ function LandingPage() {
       } else {
         // Existing conversation - send message to API
         const response = await axios.post(
-          `http://localhost:5000/api/chat/${currentConversationId}/message`,
+          `https://ai-expert-chat-9tckp.ondigitalocean.app/api/chat/${currentConversationId}/message`,
           { message: userMsg },
           getAuthHeaders()
         );
@@ -507,7 +507,7 @@ function LandingPage() {
 
     try {
       await axios.delete(
-        `http://localhost:5000/api/chat/${id}`,
+        `https://ai-expert-chat-9tckp.ondigitalocean.app/api/chat/${id}`,
         getAuthHeaders()
       );
 
@@ -556,7 +556,7 @@ function LandingPage() {
 
       // Use the new endpoint we created to fetch rate limit info
       const response = await axios.get(
-        "http://localhost:5000/api/v1/auth/rate-limit-info",
+        "https://ai-expert-chat-9tckp.ondigitalocean.app/api/v1/auth/rate-limit-info",
         getAuthHeaders()
       );
 
