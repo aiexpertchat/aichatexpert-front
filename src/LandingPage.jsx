@@ -772,12 +772,6 @@ function LandingPage() {
                 <span className="hidden md:inline text-sm text-gray-500">
                   {usageData.remaining} chats left
                 </span>
-                <button
-                  onClick={() => setShowPricingModal(true)}
-                  className="py-1 px-3 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition-colors"
-                >
-                  Upgrade
-                </button>
               </>
             )}
           </div>
@@ -789,12 +783,84 @@ function LandingPage() {
           <div className="flex-1 overflow-y-auto p-4 md:p-6">
             {messages.length === 0 ? (
               <div className="h-full flex items-center justify-center">
-                <div className="text-center space-y-3 max-w-md">
+                <div className="text-center space-y-4 max-w-md">
                   <h2 className="text-lg font-medium text-gray-800">
                     How can I help you today?
                   </h2>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 mb-4">
                     Ask me anything about your data, tasks, or questions
+                  </p>
+
+                  {/* Input box directly under welcome message */}
+                  <div className="relative rounded-xl border border-gray-300 shadow-sm focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 bg-white max-w-md mx-auto mt-4">
+                    <textarea
+                      ref={textareaRef}
+                      className="w-full py-3 px-4 md:py-4 md:px-5 pr-14 resize-none focus:outline-none text-gray-700 max-h-[180px] min-h-[52px] rounded-xl"
+                      placeholder="Type your question here..."
+                      value={userInput}
+                      onChange={(e) => {
+                        setUserInput(e.target.value);
+                        adjustTextareaHeight();
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          sendMessage();
+                        }
+                      }}
+                      disabled={isLoading}
+                      rows="1"
+                    />
+                    <button
+                      onClick={sendMessage}
+                      disabled={!userInput.trim() || isLoading}
+                      className={`absolute right-3 bottom-3 rounded-full p-2 transition-colors ${
+                        userInput.trim() && !isLoading
+                          ? "text-white bg-blue-500 hover:bg-blue-600"
+                          : "text-gray-300 bg-gray-100 cursor-not-allowed"
+                      }`}
+                      aria-label="Send message"
+                    >
+                      {isLoading ? (
+                        <svg
+                          className="w-5 h-5 animate-spin"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            fill="none"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                      ) : (
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                          ></path>
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Press Enter to send, Shift+Enter for a new line
                   </p>
 
                   {/* Add upgrade banner for free users */}
@@ -860,110 +926,112 @@ function LandingPage() {
             <div ref={chatEndRef} />
           </div>
 
-          {/* Input area */}
-          <div className="border-t border-gray-200 bg-white p-3 md:p-4">
-            <div className="max-w-4xl mx-auto">
-              {/* Show upgrade banner when user is low on chats */}
-              {usageData.remaining <= 10 &&
-                userPlan !== "Premium" &&
-                usageData.remaining > 0 && (
-                  <div className="mb-4 bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center justify-between">
-                    <p className="text-sm text-amber-800">
+          {/* Bottom input area - only show when there are messages */}
+          {messages.length > 0 && (
+            <div className="border-t border-gray-200 bg-white p-3 md:p-4">
+              <div className="max-w-4xl mx-auto">
+                {/* Show upgrade banner when user is low on chats */}
+                {usageData.remaining <= 10 &&
+                  userPlan !== "Premium" &&
+                  usageData.remaining > 0 && (
+                    <div className="mb-4 bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center justify-between">
+                      <p className="text-sm text-amber-800">
+                        <svg
+                          className="inline-block w-4 h-4 mr-1 mb-1"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        Only{" "}
+                        <span className="font-bold">
+                          {usageData.remaining} chat interactions
+                        </span>{" "}
+                        remaining on your {userPlan} plan.
+                      </p>
+                      <button
+                        onClick={() => setShowPricingModal(true)}
+                        className="text-xs bg-amber-700 text-white px-3 py-1 rounded hover:bg-amber-800 transition-colors"
+                      >
+                        Upgrade Now
+                      </button>
+                    </div>
+                  )}
+
+                <div className="relative rounded-xl border border-gray-300 shadow-sm focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 bg-white">
+                  <textarea
+                    ref={textareaRef}
+                    className="w-full py-3 px-4 md:py-4 md:px-5 pr-14 resize-none focus:outline-none text-gray-700 max-h-[180px] min-h-[52px] rounded-xl"
+                    placeholder="Type your question here..."
+                    value={userInput}
+                    onChange={(e) => {
+                      setUserInput(e.target.value);
+                      adjustTextareaHeight();
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                      }
+                    }}
+                    disabled={isLoading}
+                    rows="1"
+                  />
+                  <button
+                    onClick={sendMessage}
+                    disabled={!userInput.trim() || isLoading}
+                    className={`absolute right-3 bottom-3 rounded-full p-2 transition-colors ${
+                      userInput.trim() && !isLoading
+                        ? "text-white bg-blue-500 hover:bg-blue-600"
+                        : "text-gray-300 bg-gray-100 cursor-not-allowed"
+                    }`}
+                    aria-label="Send message"
+                  >
+                    {isLoading ? (
+                      <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                    ) : (
                       <svg
-                        className="inline-block w-4 h-4 mr-1 mb-1"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
                       >
                         <path
-                          fillRule="evenodd"
-                          d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                          clipRule="evenodd"
-                        />
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                        ></path>
                       </svg>
-                      Only{" "}
-                      <span className="font-bold">
-                        {usageData.remaining} chat interactions
-                      </span>{" "}
-                      remaining on your {userPlan} plan.
-                    </p>
-                    <button
-                      onClick={() => setShowPricingModal(true)}
-                      className="text-xs bg-amber-700 text-white px-3 py-1 rounded hover:bg-amber-800 transition-colors"
-                    >
-                      Upgrade Now
-                    </button>
-                  </div>
-                )}
-
-              <div className="relative rounded-xl border border-gray-300 shadow-sm focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 bg-white">
-                <textarea
-                  ref={textareaRef}
-                  className="w-full py-3 px-4 md:py-4 md:px-5 pr-14 resize-none focus:outline-none text-gray-700 max-h-[180px] min-h-[52px] rounded-xl"
-                  placeholder="Type your question here..."
-                  value={userInput}
-                  onChange={(e) => {
-                    setUserInput(e.target.value);
-                    adjustTextareaHeight();
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      sendMessage();
-                    }
-                  }}
-                  disabled={isLoading}
-                  rows="1"
-                />
-                <button
-                  onClick={sendMessage}
-                  disabled={!userInput.trim() || isLoading}
-                  className={`absolute right-3 bottom-3 rounded-full p-2 transition-colors ${
-                    userInput.trim() && !isLoading
-                      ? "text-white bg-blue-500 hover:bg-blue-600"
-                      : "text-gray-300 bg-gray-100 cursor-not-allowed"
-                  }`}
-                  aria-label="Send message"
-                >
-                  {isLoading ? (
-                    <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24">
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                        fill="none"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                  ) : (
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                      ></path>
-                    </svg>
-                  )}
-                </button>
+                    )}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-2 text-center">
+                  Press Enter to send, Shift+Enter for a new line
+                </p>
               </div>
-              <p className="text-xs text-gray-500 mt-2 text-center">
-                Press Enter to send, Shift+Enter for a new line
-              </p>
             </div>
-          </div>
+          )}
         </div>
       </div>
 

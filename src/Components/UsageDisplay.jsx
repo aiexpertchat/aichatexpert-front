@@ -133,12 +133,12 @@ const UsageDisplay = ({
               </span>
             </div>
           </div>
-          <button
+          {/* <button
             onClick={onShowPricingModal}
             className="px-3 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
           >
             Upgrade
-          </button>
+          </button> */}
         </div>
 
         {usageData.planType !== "Premium" && (
