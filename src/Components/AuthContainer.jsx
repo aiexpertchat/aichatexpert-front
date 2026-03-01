@@ -75,7 +75,7 @@ const AuthContainer = () => {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-4 md:mb-0">
               <p className="text-gray-500 text-sm">
-                © 2025 BlueDash. All rights reserved.
+                © 2025 Expert AI Chat. All rights reserved.
               </p>
             </div>
             <div className="flex space-x-6">
