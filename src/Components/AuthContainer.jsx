@@ -32,7 +32,7 @@ const AuthContainer = () => {
                   />
                 </svg>
               </div>
-              <span className="text-xl font-bold text-gray-800">BlueDas</span>
+              <span className="text-xl font-bold text-gray-800">Expert AI Chat</span>
             </div>
             <div className="flex space-x-4">
               <button
